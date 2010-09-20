@@ -7,34 +7,19 @@
 module Diaspora
   module UserModules
     module Friending
-      def send_friend_request_to(desired_friend, aspect)
+      def send_friend_request_to(new_friend, aspect)
         raise "You are already friends with that person!" if self.friends.detect{
-          |x| x.receive_url == desired_friend.receive_url}
-        request = Request.instantiate(
-          :to => desired_friend.receive_url,
-          :from => self.person,
-          :into => aspect.id)
-        if request.save
-          self.pending_requests << request
-          self.save
-
-          aspect.requests << request
-          aspect.save
-
-          salmon request, :to => desired_friend
-        end
-        request
+          |x| x.receive_url == new_friend.receive_url}
+        writ = self.inscribe(new_friend, :into => aspect)
+        salmon writ, :to => new_friend
+        writ
       end
 
 
-      def accept_friend_request(friend_request_id, aspect_id)
-        request = Request.find_by_id(friend_request_id)
-        pending_requests.delete(request)
-
-        activate_friend(request.person, aspect_by_id(aspect_id))
-
-        request.reverse_for(self)
-        request
+      def accept_friend_request(writ_id, aspect_id)
+        writ = Writ.find_by_id(writ_id)
+        pending_writs.delete(writ)
+        inscribe writ.sender, :into => aspect_by_id(aspect_id)
       end
 
       def dispatch_friend_acceptance(request, requester)
@@ -43,13 +28,13 @@ module Diaspora
       end
 
       def accept_and_respond(friend_request_id, aspect_id)
-        requester = Request.find_by_id(friend_request_id).person
+        requester = Writ.find_by_id(friend_request_id).person
         reversed_request = accept_friend_request(friend_request_id, aspect_id)
         dispatch_friend_acceptance reversed_request, requester
       end
 
       def ignore_friend_request(friend_request_id)
-        request = Request.find_by_id(friend_request_id)
+        request = Writ.find_by_id(friend_request_id)
         person  = request.person
 
         self.pending_requests.delete(request)
@@ -59,22 +44,15 @@ module Diaspora
         request.destroy
       end
 
-      def receive_friend_request(friend_request)
-        Rails.logger.info("receiving friend request #{friend_request.to_json}")
 
-        if request_from_me?(friend_request) && self.aspect_by_id(friend_request.aspect_id)
-          aspect = self.aspect_by_id(friend_request.aspect_id)
-          activate_friend(friend_request.person, aspect)
+      def receive_writ(writ)
+        Rails.logger.info("receiving writ #{writ.to_json}")
 
-          Rails.logger.info("#{self.real_name}'s friend request has been accepted")
-
-          friend_request.destroy
-        else
-          self.pending_requests << friend_request
-          self.save
-          Rails.logger.info("#{self.real_name} has received a friend request")
-          friend_request.save
-        end
+        return if friends.include? writ.sender #TODO Put this info in a notification queue
+        writ.save
+        self.pending_writs << writ
+        self.save
+        Rails.logger.info("#{self.real_name} has received a writ")
       end
 
       def unfriend(bad_friend)

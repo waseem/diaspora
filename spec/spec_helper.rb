@@ -80,9 +80,9 @@ end
   end
 
   def friend_users(user1, aspect1, user2, aspect2)
-    request = user1.send_friend_request_to(user2.person, aspect1)
-    reversed_request = user2.accept_friend_request( request.id, aspect2.id)
-    user1.receive reversed_request.to_diaspora_xml
+    writ = user1.send_friend_request_to(user2.person, aspect1)
+    user2.receive writ.to_xml.to_s
+    user2.accept_friend_request(writ.id, aspect2.id)
   end
 
   def stub_success(address = 'abc@example.com')

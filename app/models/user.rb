@@ -29,7 +29,7 @@ class User
 
   many :friends,           :in => :friend_ids,          :class_name => 'Person'
   many :visible_people,    :in => :visible_person_ids,  :class_name => 'Person' # One of these needs to go
-  many :pending_requests,  :in => :pending_request_ids, :class_name => 'Request'
+  many :pending_writs,     :in => :pending_request_ids, :class_name => 'Writ'
   many :raw_visible_posts, :in => :visible_post_ids,    :class_name => 'Post'
 
   many :aspects, :class_name => 'Aspect'
@@ -67,11 +67,18 @@ class User
   def drop_aspect( aspect )
     if aspect.people.size == 0
       aspect.destroy
-    else 
+    else
       raise "Aspect not empty"
     end
   end
 
+  def inscribe(person, options)
+    options[:from] = self.person
+    options[:to] = person.receive_url
+    writ = Writ.instantiate options
+    activate_friend(person, options[:into])
+    writ
+  end
 
   def move_friend( opts = {})
     return true if opts[:to] == opts[:from]
@@ -229,7 +236,9 @@ class User
   end
 
   def receive xml
+    pp xml
     object = Diaspora::Parser.from_xml(xml)
+    pp object
     Rails.logger.debug("Receiving object for #{self.real_name}:\n#{object.inspect}")
     Rails.logger.debug("From: #{object.person.inspect}") if object.person
 
@@ -245,15 +254,16 @@ else
                              aspect.save
         }
       end
-    elsif object.is_a? Request
-      person = Diaspora::Parser.parse_or_find_person_from_xml( xml )
-      person.serialized_key ||= object.exported_key
-      object.person = person
-      object.person.save
-      old_request =  Request.first(:id => object.id)
-      object.aspect_id = old_request.aspect_id if old_request
-      object.save
-      receive_friend_request(object)
+    elsif object.is_a? Writ
+      writ = object
+      writ_sender = Diaspora::Parser.parse_or_find_person_from_xml( xml )
+      writ_sender.serialized_key ||= writ.exported_key
+      writ.person = writ_sender
+      writ.person.save
+      old_writ =  Writ.first(:id => writ.id)
+      writ.aspect_id = old_writ.aspect_id if old_writ
+      writ.save
+      receive_friend_request(writ)
     elsif object.is_a? Profile
       person = Diaspora::Parser.owner_id_from_xml xml
       person.profile = object
@@ -295,7 +305,7 @@ else
   def self.instantiate!( opts = {} )
     hostname = opts[:url].gsub(/(https?:|www\.)\/\//, '')
     hostname.chop! if hostname[-1, 1] == '/'
-    
+
     opts[:person][:diaspora_handle] = "#{opts[:username]}@#{hostname}"
     puts opts[:person][:diaspora_handle]
     opts[:person][:serialized_key] = generate_key
@@ -306,7 +316,7 @@ else
     aspect(:name => "Family")
     aspect(:name => "Work")
   end
-  
+
   def terse_url
     terse = self.url.gsub(/(https?:|www\.)\/\//, '')
     terse = terse.chop! if terse[-1, 1] == '/'

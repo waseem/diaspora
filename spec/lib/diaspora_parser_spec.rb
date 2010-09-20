@@ -64,12 +64,12 @@ describe Diaspora::Parser do
       StatusMessage.count.should == 0
     end
 
-    it "should create a new person upon getting a person request" do
+    it "should create a new person upon getting a writ" do
       person_count = Person.all.count
-      request = Request.instantiate(:to =>"http://www.google.com/", :from => @person)
+      writ = Writ.instantiate :to =>user.person, :from => @person
 
       original_person_id = @person.id
-      xml = request.to_diaspora_xml
+      xml = writ.to_diaspora_xml
 
       @person.destroy
       Person.all.count.should == person_count -1
@@ -77,16 +77,16 @@ describe Diaspora::Parser do
       Person.all.count.should == person_count
 
       Person.first(:_id => original_person_id).serialized_key.include?("PUBLIC").should be true
-      url = "http://" + request.callback_url.split("/")[2] + "/"
+      url = "http://" + writ.callback_url.split("/")[2] + "/"
       Person.where(:url => url).first.id.should == original_person_id
     end
 
     it "should not create a new person if the person is already here" do
       person_count = Person.all.count
-      request = Request.instantiate(:to =>"http://www.google.com/", :from => @user2.person)
+      writ = Writ.instantiate :to =>user.person, :from => @person
 
       original_person_id = @user2.person.id
-      xml = request.to_diaspora_xml
+      xml = writ.to_diaspora_xml
 
 
       Person.all.count.should be person_count
@@ -97,54 +97,8 @@ describe Diaspora::Parser do
       @user2.person.reload
       @user2.person.serialized_key.include?("PRIVATE").should be true
 
-      url = "http://" + request.callback_url.split("/")[2] + "/"
+      url = "http://" + writ.callback_url.split("/")[2] + "/"
       Person.where(:url => url).first.id.should == original_person_id
-    end
-
-    it "should activate the Person if I initiated a request to that url" do
-      request = @user.send_friend_request_to( @user2.person, @aspect)
-
-      request.reverse_for @user2
-
-      xml = request.to_diaspora_xml
-
-      @user2.person.destroy
-      @user2.destroy
-
-      @user.receive xml
-      new_person = Person.first(:url => @user2.person.url)
-      new_person.nil?.should be false
-
-      @user.reload
-      @aspect.reload
-      @aspect.people.include?(new_person).should be true
-      @user.friends.include?(new_person).should be true
-    end
-
-
-    it 'should process retraction for a person' do
-      person_count = Person.all.count
-      request = @user.send_friend_request_to( @user2.person, @aspect)
-      request.reverse_for @user2
-      xml = request.to_diaspora_xml
-
-      retraction = Retraction.for(@user2)
-      retraction_xml = retraction.to_diaspora_xml
-
-      @user2.person.destroy
-      @user2.destroy
-      @user.receive xml
-
-      @aspect.reload
-      aspect_people_count = @aspect.people.size
-      #They are now friends
-
-
-      Person.count.should == person_count
-      @user.receive retraction_xml
-
-      @aspect.reload
-      @aspect.people.size.should == aspect_people_count -1
     end
 
     it 'should marshal a profile for a person' do

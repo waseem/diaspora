@@ -9,42 +9,33 @@ require File.dirname(__FILE__) + '/../../spec_helper'
 describe User do
    before do
       @user = Factory.create(:user)
+      @friend = Factory.create(:person)
       @aspect = @user.aspect(:name => 'heroes')
    end
 
   describe 'friend requesting' do
     it "should assign a request to a aspect" do
-      friend = Factory.create(:person)
-      aspect = @user.aspect(:name => "Dudes")
-      aspect.requests.size.should == 0
+      @aspect.requests.size.should == 0
+      @user.send_friend_request_to(@friend, @aspect)
 
-      @user.send_friend_request_to(friend, aspect)
-
-      aspect.reload
-      aspect.requests.size.should == 1
+      @aspect.reload
+      @aspect.requests.size.should == 1
     end
 
 
      it "should be able to accept a pending friend request" do
-      friend = Factory.create(:person)
-      r = Request.instantiate(:to => @user.receive_url, :from => friend)
-      r.save
-      Person.all.count.should == 2
+      req = Request.instantiate(:to => @user.receive_url, :from => @friend)
+      req.save
       Request.for_user(@user).all.count.should == 1
-      @user.accept_friend_request(r.id, @aspect.id)
+      @user.accept_friend_request(req.id, @aspect.id)
       Request.for_user(@user).all.count.should == 0
     end
 
     it 'should be able to ignore a pending friend request' do
-      friend = Factory.create(:person)
-      r = Request.instantiate(:to => @user.receive_url, :from => friend)
+      r = Request.instantiate(:to => @user.receive_url, :from => @friend)
       r.save
 
-      Person.count.should == 2
-
       @user.ignore_friend_request(r.id)
-
-      Person.count.should == 2
       Request.count.should == 0
     end
 
@@ -52,7 +43,6 @@ describe User do
 
       @user.friends << friend
       @user.save
-
 
       proc {@user.send_friend_request_to( friend, @aspect)}.should raise_error
     end
@@ -91,7 +81,7 @@ describe User do
         @user2.pending_requests.size.should be 1
         @user2.accept_friend_request @request_three.id, @aspect2.id
         @user2.friends.include?(@user.person).should be true
-        Person.all.count.should be 3
+        Person.all.count.should be 4
       end
 
       it 'should not delete the ignored user on the same pod' do
@@ -100,7 +90,7 @@ describe User do
         @user2.pending_requests.size.should be 1
         @user2.ignore_friend_request @request_three.id
         @user2.friends.include?(@user.person).should be false
-        Person.all.count.should be 3
+        Person.all.count.should be 4
       end
 
       it 'should both users should befriend the same person' do
@@ -114,7 +104,7 @@ describe User do
         @user2.pending_requests.size.should be 1
         @user2.accept_friend_request @request_two.id, @aspect2.id
         @user2.friends.include?(@person_one).should be true
-        Person.all.count.should be 3
+        Person.all.count.should be 4
       end
 
       it 'should keep the person around if one of the users rejects him' do
@@ -128,7 +118,7 @@ describe User do
         @user2.pending_requests.size.should be 1
         @user2.ignore_friend_request @request_two.id
         @user2.friends.include?(@person_one).should be false
-        Person.all.count.should be 3
+        Person.all.count.should be 4
       end
 
       it 'should keep the person around if the users ignores them' do
@@ -141,7 +131,7 @@ describe User do
         @user2.pending_requests.size.should be 1
         @user2.ignore_friend_request @user2.pending_requests.first.id#@request_two.id
         @user2.friends.include?(@person_one).should be false
-        Person.all.count.should be 3
+        Person.all.count.should be 4
       end
 
 
