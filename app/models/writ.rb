@@ -23,8 +23,8 @@ class Writ
 
   validates_presence_of :destination_url, :callback_url
 
-  scope :for_user,  lambda{ |user| where(:destination_url    => user.receive_url) }
-  scope :from_user, lambda{ |user| where(:destination_url.ne => user.receive_url) }
+  scope :for_user,  lambda{ |user| where(:destination_url    => user.person.receive_url) }
+  scope :from_user, lambda{ |user| where(:destination_url.ne => user.person.receive_url) }
 
   def self.instantiate(options = {})
     sender = options[:from]

@@ -37,5 +37,6 @@ class Aspect
       }
     }
   end
+
 end
 
