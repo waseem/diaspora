@@ -2,28 +2,28 @@
 #   licensed under the Affero General Public License version 3.  See
 #   the COPYRIGHT file.
 
-
-require 'lib/diaspora/user/friending.rb'
-require 'lib/diaspora/user/querying.rb'
-require 'lib/salmon/salmon'
+require File.expand_path('../../../lib/diaspora/user/friending', __FILE__)
+require File.expand_path('../../../lib/diaspora/user/querying', __FILE__)
+require File.expand_path('../../../lib/diaspora/user/receiving', __FILE__)
+require File.expand_path('../../../lib/salmon/salmon', __FILE__)
 
 class User
   include MongoMapper::Document
   include Diaspora::UserModules::Friending
   include Diaspora::UserModules::Querying
+  include Diaspora::UserModules::Receiving
   include Encryptor::Private
   QUEUE = MessageHandler.new
 
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
   key :username, :unique => true
+  key :serialized_private_key, String
 
   key :friend_ids,          Array
   key :pending_request_ids, Array
   key :visible_post_ids,    Array
   key :visible_person_ids,  Array
-
-  key :url, String
 
   one :person, :class_name => 'Person', :foreign_key => :owner_id
 
@@ -36,7 +36,7 @@ class User
 
   after_create :seed_aspects
 
-  before_validation_on_create :downcase_username
+  before_validation :downcase_username, :on => :create
 
    def self.find_for_authentication(conditions={})
     if conditions[:username] =~ /^([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})$/i # email regex
@@ -102,7 +102,6 @@ class User
 
   ######## Posting ########
   def post(class_name, options = {})
-
     if class_name == :photo
       raise ArgumentError.new("No album_id given") unless options[:album_id]
       aspect_ids = aspects_with_post( options[:album_id] )
@@ -111,15 +110,42 @@ class User
       aspect_ids = options.delete(:to)
     end
 
-    aspect_ids = [aspect_ids.to_s] if aspect_ids.is_a? BSON::ObjectId
-    raise ArgumentError.new("You must post to someone.") if aspect_ids.nil? || aspect_ids.empty?
+    aspect_ids = validate_aspect_permissions(aspect_ids)
 
+    intitial_post(class_name, aspect_ids, options)
+  end
+
+  def intitial_post(class_name, aspect_ids, options = {})
     post = build_post(class_name, options)
-
     post.socket_to_uid(id, :aspect_ids => aspect_ids) if post.respond_to?(:socket_to_uid)
     push_to_aspects(post, aspect_ids)
-
     post
+  end
+
+  def update_post( post, post_hash = {} )
+    if self.owns? post
+      post.update_attributes(post_hash)
+    end
+  end
+
+  def validate_aspect_permissions(aspect_ids)
+    if aspect_ids == "all"
+      return aspect_ids
+    end
+
+    aspect_ids = [aspect_ids.to_s] unless aspect_ids.is_a? Array
+
+    if aspect_ids.nil? || aspect_ids.empty?
+      raise ArgumentError.new("You must post to someone.")
+    end
+
+    aspect_ids.each do |aspect_id|
+      unless self.aspects.find(aspect_id)
+        raise ArgumentError.new("Cannot post to an aspect you do not own.")
+      end
+    end
+
+    aspect_ids
   end
 
   def build_post( class_name, options = {})
@@ -223,92 +249,13 @@ class User
       false
     end
   end
-
-  ###### Receiving #######
-  def receive_salmon ciphertext
-    cleartext = decrypt( ciphertext)
-    Rails.logger.info("Received a salmon: #{cleartext}")
-    salmon = Salmon::SalmonSlap.parse cleartext
-    if salmon.verified_for_key?(salmon.author.public_key)
-      Rails.logger.info("data in salmon: #{salmon.data}")
-      self.receive(salmon.data)
-    end
-  end
-
-  def receive xml
-    pp xml
-    object = Diaspora::Parser.from_xml(xml)
-    pp object
-    Rails.logger.debug("Receiving object for #{self.real_name}:\n#{object.inspect}")
-    Rails.logger.debug("From: #{object.person.inspect}") if object.person
-
-    if object.is_a? Retraction
-      if object.type == 'Person'
-
-        Rails.logger.info( "the person id is #{object.post_id} the friend found is #{visible_person_by_id(object.post_id).inspect}")
-        unfriended_by visible_person_by_id(object.post_id)
-else
-        object.perform self.id
-        aspects = self.aspects_with_person(object.person)
-        aspects.each{ |aspect| aspect.post_ids.delete(object.post_id.to_id)
-                             aspect.save
-        }
-      end
-    elsif object.is_a? Writ
-      writ = object
-      writ_sender = Diaspora::Parser.parse_or_find_person_from_xml( xml )
-      writ_sender.serialized_key ||= writ.exported_key
-      writ.person = writ_sender
-      writ.person.save
-      old_writ =  Writ.first(:id => writ.id)
-      writ.aspect_id = old_writ.aspect_id if old_writ
-      writ.save
-      receive_friend_request(writ)
-    elsif object.is_a? Profile
-      person = Diaspora::Parser.owner_id_from_xml xml
-      person.profile = object
-      person.save
-
-    elsif object.is_a?(Comment)
-      object.person = Diaspora::Parser.parse_or_find_person_from_xml( xml ).save if object.person.nil?
-      self.visible_people = self.visible_people | [object.person]
-      self.save
-      Rails.logger.debug("The person parsed from comment xml is #{object.person.inspect}") unless object.person.nil?
-      object.person.save
-    Rails.logger.debug("From: #{object.person.inspect}") if object.person
-      raise "In receive for #{self.real_name}, signature was not valid on: #{object.inspect}" unless object.post.person == self.person || object.verify_post_creator_signature
-      object.save
-      unless owns?(object)
-        dispatch_comment object
-      end
-      object.socket_to_uid(id)  if (object.respond_to?(:socket_to_uid) && !self.owns?(object))
-    else
-      Rails.logger.debug("Saving object: #{object}")
-      object.user_refs += 1
-      object.save
-
-      self.raw_visible_posts << object
-      self.save
-
-      aspects = self.aspects_with_person(object.person)
-      aspects.each{ |aspect|
-        aspect.posts << object
-        aspect.save
-        object.socket_to_uid(id, :aspect_ids => [aspect.id]) if (object.respond_to?(:socket_to_uid) && !self.owns?(object))
-      }
-
-    end
-
-  end
-
+  #
   ###Helpers############
   def self.instantiate!( opts = {} )
-    hostname = opts[:url].gsub(/(https?:|www\.)\/\//, '')
-    hostname.chop! if hostname[-1, 1] == '/'
-
-    opts[:person][:diaspora_handle] = "#{opts[:username]}@#{hostname}"
-    puts opts[:person][:diaspora_handle]
-    opts[:person][:serialized_key] = generate_key
+    opts[:person][:diaspora_handle] = "#{opts[:username]}@#{APP_CONFIG[:terse_pod_url]}"
+    opts[:person][:url] = APP_CONFIG[:pod_url]
+    opts[:serialized_private_key] = generate_key
+    opts[:person][:serialized_public_key] = opts[:serialized_private_key].public_key
     User.create(opts)
   end
 
@@ -324,13 +271,12 @@ else
   end
 
   def diaspora_handle
-    "#{self.username}@#{self.terse_url}"
+    "#{self.username}@#{APP_CONFIG[:terse_pod_url]}"
   end
 
   def downcase_username
     username.downcase! if username
   end
-
 
   def as_json(opts={})
     {
@@ -342,7 +288,14 @@ else
       }
     }
   end
-    def self.generate_key
-      OpenSSL::PKey::RSA::generate 4096
-    end
+
+
+  def self.generate_key
+    OpenSSL::PKey::RSA::generate 4096
+  end
+
+  def encryption_key
+    OpenSSL::PKey::RSA.new( serialized_private_key )
+  end
+
 end

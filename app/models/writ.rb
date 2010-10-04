@@ -2,9 +2,7 @@
 #   licensed under the Affero General Public License version 3.  See
 #   the COPYRIGHT file.
 
-
 class Writ
-  require 'lib/diaspora/webhooks'
   include MongoMapper::Document
   include Diaspora::Webhooks
   include ROXML
@@ -23,8 +21,8 @@ class Writ
 
   validates_presence_of :destination_url, :callback_url
 
-  scope :for_user,  lambda{ |user| where(:destination_url    => user.receive_url) }
-  scope :from_user, lambda{ |user| where(:destination_url.ne => user.receive_url) }
+  scope :for_user,  lambda{ |user| where(:destination_url    => user.person.receive_url) }
+  scope :from_user, lambda{ |user| where(:destination_url.ne => user.person.receive_url) }
 
   def self.instantiate(options = {})
     sender = options[:from]

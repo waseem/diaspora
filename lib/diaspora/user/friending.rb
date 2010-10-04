@@ -2,8 +2,6 @@
 #   licensed under the Affero General Public License version 3.  See
 #   the COPYRIGHT file.
 
-
-
 module Diaspora
   module UserModules
     module Friending
@@ -14,8 +12,6 @@ module Diaspora
         salmon writ, :to => new_friend
         writ
       end
-
-
       def accept_friend_request(writ_id, aspect_id)
         writ = Writ.find_by_id(writ_id)
         pending_writs.delete(writ)
@@ -64,7 +60,8 @@ module Diaspora
 
       def remove_friend(bad_friend)
         raise "Friend not deleted" unless self.friend_ids.delete( bad_friend.id )
-        aspects.each{|g| g.person_ids.delete( bad_friend.id )}
+        aspects.each{|aspect|
+          aspect.person_ids.delete( bad_friend.id )}
         self.save
 
         self.raw_visible_posts.find_all_by_person_id( bad_friend.id ).each{|post|

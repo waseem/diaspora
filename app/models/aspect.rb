@@ -2,7 +2,6 @@
 #   licensed under the Affero General Public License version 3.  See
 #   the COPYRIGHT file.
 
-
 class Aspect
   include MongoMapper::Document
 
@@ -37,5 +36,6 @@ class Aspect
       }
     }
   end
+
 end
 
