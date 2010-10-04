@@ -61,7 +61,7 @@ describe Diaspora::Parser do
 
     it "should create a new person upon getting a writ" do
       person_count = Person.all.count
-      writ = Writ.instantiate :to =>user.person, :from => @person
+      writ = Writ.instantiate :to => @user.person, :from => @person
 
       original_person_id = @person.id
       xml = writ.to_diaspora_xml
@@ -79,7 +79,7 @@ describe Diaspora::Parser do
 
     it "should not create a new person if the person is already here" do
       person_count = Person.all.count
-      writ = Writ.instantiate :to =>user.person, :from => @person
+      writ = Writ.instantiate :to => @user.person, :from => @user2.person
 
       original_person_id = @user2.person.id
       xml = writ.to_diaspora_xml
@@ -96,55 +96,7 @@ describe Diaspora::Parser do
       Person.where(:url => url).first.id.should == original_person_id
     end
 
-<<<<<<< HEAD
-=======
-    it "should activate the Person if I initiated a request to that url" do
-      request = @user.send_friend_request_to( @user2.person, @aspect)
-      @user.reload
-      request.reverse_for @user2
-
-      xml = request.to_diaspora_xml
-
-      @user2.person.destroy
-      @user2.destroy
-
-      @user.receive xml
-      new_person = Person.first(:url => @user2.person.url)
-      new_person.nil?.should be false
-
-      @user.reload
-      @aspect.reload
-      @aspect.people.include?(new_person).should be true
-      @user.friends.include?(new_person).should be true
-    end
-
-    it 'should process retraction for a person' do
-      person_count = Person.all.count
-      request = @user.send_friend_request_to( @user2.person, @aspect)
-      @user.reload
-      request.reverse_for @user2
-      xml = request.to_diaspora_xml
-
-      retraction = Retraction.for(@user2)
-      retraction_xml = retraction.to_diaspora_xml
-
-      @user2.person.destroy
-      @user2.destroy
-      @user.receive xml
-
-      @aspect.reload
-      aspect_people_count = @aspect.people.size
-      #They are now friends
-
-      Person.count.should == person_count
-      @user.receive retraction_xml
-
-      @aspect.reload
-      @aspect.people.size.should == aspect_people_count -1
-    end
-
->>>>>>> master
-    it 'should marshal a profile for a person' do
+   it 'should marshal a profile for a person' do
       #Create person
       person = Factory.create(:person)
       id = person.id

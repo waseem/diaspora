@@ -10,20 +10,18 @@ module Diaspora
       Person.first(:id => id)
     end
 
-    def self.parse_or_find_person_from_xml(xml)
+    def self.parse_or_find_person_from_xml(xml, element = "person")
       doc = Nokogiri::XML(xml) { |cfg| cfg.noblanks }
-      person_xml = doc.xpath("//person").to_s
-      person_id = doc.xpath("//person/_id").text.to_s
+      person_xml = doc.xpath("//#{element}").to_s
+      person_id = doc.xpath("//#{element}/_id").text.to_s
       person = Person.first(:_id => person_id)
       person ? person : Person.from_xml( person_xml)
     end
 
     def self.from_xml(xml)
       doc = Nokogiri::XML(xml) { |cfg| cfg.noblanks }
-      return unless body = doc.xpath("/XML/post").children.first
-
       begin
-        new_object = body.name.camelize.constantize.from_xml body.to_s
+        new_object = doc.root.name.camelize.constantize.from_xml doc.root.to_s
 
         if new_object.is_a? Post
           existing_object = new_object.class.find_by_id(new_object.id)

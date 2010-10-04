@@ -6,9 +6,7 @@ module Diaspora
   module Webhooks
 
     def to_diaspora_xml
-      xml = "<XML>"
-      xml += "<post>#{to_xml.to_s}</post>"
-      xml += "</XML>"
+      to_xml.to_s
     end
 
   end

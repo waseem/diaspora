@@ -17,8 +17,8 @@ module Diaspora
 
         if object.is_a? Retraction
           receive_retraction object, xml
-        elsif object.is_a? Request
-          receive_request object, xml
+        elsif object.is_a? Writ
+          receive_writ object, xml
         elsif object.is_a? Profile
           receive_profile object, xml
         elsif object.is_a?(Comment)
@@ -41,15 +41,12 @@ module Diaspora
         end
       end
 
-      def receive_request request, xml
-        person = Diaspora::Parser.parse_or_find_person_from_xml( xml )
-        person.serialized_public_key ||= request.exported_key
-        request.person = person
-        request.person.save
-        old_request =  Request.first(:id => request.id)
-        request.aspect_id = old_request.aspect_id if old_request
-        request.save
-        receive_friend_request(request)
+      def receive_writ writ, xml
+        person = Diaspora::Parser.parse_or_find_person_from_xml( xml, "sender" )
+        person.serialized_public_key ||= writ.exported_key
+        writ.sender = person
+        writ.sender.save
+        writ.save
       end
 
       def receive_profile profile, xml

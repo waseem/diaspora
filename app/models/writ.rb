@@ -18,7 +18,7 @@ class Writ
   key :exported_key,    String
 
   belongs_to :sender, :class_name => 'Person'
-
+  alias :person :sender
   validates_presence_of :destination_url, :callback_url
 
   scope :for_user,  lambda{ |user| where(:destination_url    => user.person.receive_url) }

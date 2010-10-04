@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery :except => :receive
 
   before_filter :set_friends_and_status, :except => [:create, :update]
-  before_filter :count_requests
+  before_filter :count_writs
   before_filter :fb_user_info
 
   layout :layout_by_resource
@@ -35,8 +35,8 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def count_requests
-    @request_count = Request.for_user(current_user).size if current_user
+  def count_writs
+    @request_count = current_user.pending_writs.size if current_user
   end
 
   def fb_user_info

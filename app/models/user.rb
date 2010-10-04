@@ -21,7 +21,7 @@ class User
   key :serialized_private_key, String
 
   key :friend_ids,          Array
-  key :pending_request_ids, Array
+  key :pending_writs_ids, Array
   key :visible_post_ids,    Array
   key :visible_person_ids,  Array
 
@@ -73,6 +73,7 @@ class User
   end
 
   def inscribe(person, options)
+    raise "Already friends with that person!" if friends.member?(person)
     options[:from] = self.person
     options[:to] = person.receive_url
     writ = Writ.instantiate options
@@ -284,7 +285,7 @@ class User
         :posts            => self.raw_visible_posts.each{|post| post.as_json},
         :friends          => self.friends.each {|friend| friend.as_json},
         :aspects           => self.aspects.each  {|aspect|  aspect.as_json},
-        :pending_requests => self.pending_requests.each{|request| request.as_json},
+        :pending_writs => self.pending_writs.each{|writ| writ.as_json},
       }
     }
   end

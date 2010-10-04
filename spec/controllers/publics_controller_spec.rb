@@ -47,13 +47,9 @@ describe PublicsController do
 
       @user3 = Factory.create(:user)
 
-      req = @user2.send_friend_request_to(@user.person, aspect)
+      writ = @user2.inscribe @user.person, :into => aspect
 
-      @xml = @user.person.encrypt(@user2.salmon(req, :to => @user.person).to_xml)
-
-      req.delete
-      @user2.reload
-      @user2.pending_requests.count.should be 1
+      @xml = @user.person.encrypt(@user2.salmon(writ, :to => @user.person).to_xml)
     end
 
     it 'should add the pending request to the right user if the target person exists locally' do
