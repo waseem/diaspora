@@ -42,9 +42,9 @@ module Diaspora
       end
 
       def receive_writ writ, xml
-        person = Diaspora::Parser.parse_or_find_person_from_xml( xml, "sender" )
-        person.serialized_public_key ||= writ.exported_key
-        writ.sender = person
+        writ_sender = Diaspora::Parser.parse_or_find_person_from_xml( xml, "sender" )
+        writ_sender.serialized_public_key ||= writ.exported_key
+        writ.sender = writ_sender
         writ.sender.save
         writ.save
       end
