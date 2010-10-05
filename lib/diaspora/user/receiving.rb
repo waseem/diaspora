@@ -46,6 +46,8 @@ module Diaspora
         writ.sender = writ_sender
         writ.sender.save
         writ.save
+        pending_writs << writ
+        save
       end
 
       def receive_profile profile, xml

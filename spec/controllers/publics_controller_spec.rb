@@ -42,19 +42,9 @@ describe PublicsController do
   end
 
   describe 'friend requests' do
-    let(:aspect2) {user2.aspect(:name => 'disciples')}
+    let!(:aspect2) {user2.aspect(:name => 'disciples')}
     let!(:req)     {user2.send_friend_request_to(user.person, aspect2)}
     let!(:xml)     {user2.salmon(req).xml_for(user.person)}
-    before do
-      @user2 = Factory.create(:user)
-      aspect = @user2.aspect(:name => 'disciples')
-
-      @user3 = Factory.create(:user)
-
-      writ = @user2.inscribe @user.person, :into => aspect
-
-      @xml = @user.person.encrypt(@user2.salmon(writ, :to => @user.person).to_xml)
-    end
 
     it 'should add the pending request to the right user if the target person exists locally' do
       user2.delete

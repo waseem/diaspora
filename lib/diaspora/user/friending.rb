@@ -5,13 +5,23 @@
 module Diaspora
   module UserModules
     module Friending
+      def inscribe(person, options)
+        raise "Already friends with that person!" if friends.member?(person)
+        options[:from] = self.person
+        options[:to] = person.receive_url
+        writ = Writ.instantiate options
+        activate_friend(person, options[:into])
+        writ
+      end
+
       def send_friend_request_to(new_friend, aspect)
         raise "You are already friends with that person!" if self.friends.detect{
           |x| x.receive_url == new_friend.receive_url}
         writ = self.inscribe(new_friend, :into => aspect)
-        salmon writ, :to => new_friend
+        push_to_people(writ, [new_friend])
         writ
       end
+      
       def accept_friend_request(writ_id, aspect_id)
         writ = Writ.find_by_id(writ_id)
         pending_writs.delete(writ)

@@ -19,13 +19,49 @@ describe User do
       @aspect.people.should include @friend
     end
 
-    it "should be able to send a response to a writ"
-    it 'should be able to ignore a writ'
-    it 'should not be able to friend request an existing friend' do
-      @user.friends << @friend
-      @user.save
+    it 'should not be able to inscribe an existing friend' do
+      @user.inscribe @friend, :into => @aspect
+      proc {@user.inscribe @friend, :into => @user.aspect(:name => 'kaboom')}.should raise_error
+    end
+  end
 
-      proc {@user.inscribe @friend, :into => @aspect}.should raise_error
+  describe "receiving writs" do
+    before do
+      @admirer = Factory.create(:user)
+      @user = Factory.create(:user)
+      @writ_count = @user.pending_writs.count
+      writ = @admirer.inscribe @user, :into => @admirer.aspect(:name => 'people I admire')
+      @user.receive(writ.to_diaspora_xml)
+      @user.reload
+      @admirer.reload
+    end
+    
+    it "should have a pending writ" do
+      @user.pending_writs.count.should == @writ_count + 1
+      @user.pending_writs.first.sender.id.should == @admirer.person.id
+    end
+
+    it "should be able to send a response to a writ" do
+      @user.inscribe @user.pending_writs.first.sender, :into => @user.aspect
+      @user.pending_writs.count.should == @writ_count
+    end
+
+    it 'does not delete other pending writs' do
+      user3 = Factory.create(:user)
+      @user.receive(user3.inscribe(@user, :into => user3.aspect(:name => "skaters")).to_diaspora_xml)
+
+      @user.inscribe @user.pending_writs.first.sender, :into => @user.aspect
+      @user.pending_writs.count.should == @writ_count + 1
+    end
+
+    it "does not create a second pending writ" do
+      @user.inscribe @user.pending_writs.first.sender, :into => @user.aspect
+      @admirer.pending_writs.should be_empty
+    end
+
+    it 'should be able to ignore a writ' do
+      @user.ignore_writ @user.pending_writs.first
+      @user.pending_writs.count.should == @writ_count
     end
   end
 

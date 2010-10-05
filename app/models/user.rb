@@ -21,7 +21,7 @@ class User
   key :serialized_private_key, String
 
   key :friend_ids,          Array
-  key :pending_writs_ids, Array
+  key :pending_writ_ids, Array
   key :visible_post_ids,    Array
   key :visible_person_ids,  Array
 
@@ -29,7 +29,7 @@ class User
 
   many :friends,           :in => :friend_ids,          :class_name => 'Person'
   many :visible_people,    :in => :visible_person_ids,  :class_name => 'Person' # One of these needs to go
-  many :pending_writs,     :in => :pending_request_ids, :class_name => 'Writ'
+  many :pending_writs,     :in => :pending_writ_ids, :class_name => 'Writ'
   many :raw_visible_posts, :in => :visible_post_ids,    :class_name => 'Post'
 
   many :aspects, :class_name => 'Aspect'
@@ -70,15 +70,6 @@ class User
     else
       raise "Aspect not empty"
     end
-  end
-
-  def inscribe(person, options)
-    raise "Already friends with that person!" if friends.member?(person)
-    options[:from] = self.person
-    options[:to] = person.receive_url
-    writ = Writ.instantiate options
-    activate_friend(person, options[:into])
-    writ
   end
 
   def move_friend( opts = {})
