@@ -11,7 +11,7 @@ class RequestsController < ApplicationController
   def destroy
     if params[:accept]
       if params[:aspect_id]
-        @friend = current_user.accept_and_respond( params[:id], params[:aspect_id])
+        @friend = current_user.inscribe Person.find (params[:id]), :into => Aspect.find(params[:aspect_id])
         flash[:notice] = I18n.t 'requests.destroy.success'
         respond_with :location => current_user.aspect_by_id(params[:aspect_id])
       else

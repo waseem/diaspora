@@ -24,8 +24,8 @@ class DevUtilitiesController < ApplicationController
 
   def zombiefriendaccept
     render :nothing => true
-    Request.all.each{|r|
-      current_user.accept_and_respond(r.id, current_user.aspects.first.id)
+    Writ.all.each{|r|
+      current_user.inscribe r.sender, :into => current_user.aspects.first.id
     }
   end
 

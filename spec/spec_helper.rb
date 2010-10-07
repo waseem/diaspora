@@ -79,9 +79,8 @@ ImageUploader.enable_processing = false
   end
 
   def friend_users(user1, aspect1, user2, aspect2)
-    writ = user1.send_friend_request_to(user2.person, aspect1)
-    user2.receive writ.to_xml.to_s
-    user2.accept_friend_request(writ.id, aspect2.id)
+    user1.inscribe user2.person, :into =>  aspect1
+    user2.inscribe user1.person, :into =>  aspect2
  end
 
   def stub_success(address = 'abc@example.com')

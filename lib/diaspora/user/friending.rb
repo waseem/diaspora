@@ -15,41 +15,10 @@ module Diaspora
       end
 
       def send_friend_request_to(new_friend, aspect)
-        raise "You are already friends with that person!" if self.friends.detect{
-          |x| x.receive_url == new_friend.receive_url}
         writ = self.inscribe(new_friend, :into => aspect)
         push_to_people(writ, [new_friend])
         writ
       end
-
-      def accept_friend_request(writ_id, aspect_id)
-        writ = Writ.find_by_id(writ_id)
-        pending_writs.delete(writ)
-        inscribe writ.sender, :into => aspect_by_id(aspect_id)
-      end
-
-      def dispatch_friend_acceptance(request, requester)
-        salmon request, :to => requester
-        request.destroy unless request.callback_url.include? url
-      end
-
-      def accept_and_respond(friend_request_id, aspect_id)
-        requester = Writ.find_by_id(friend_request_id).person
-        reversed_request = accept_friend_request(friend_request_id, aspect_id)
-        dispatch_friend_acceptance reversed_request, requester
-      end
-
-      def ignore_friend_request(friend_request_id)
-        request = Writ.find_by_id(friend_request_id)
-        person  = request.person
-
-        self.pending_requests.delete(request)
-        self.save
-
-        person.save
-        request.destroy
-      end
-
 
       def receive_writ(writ)
         Rails.logger.info("receiving writ #{writ.to_json}")
@@ -62,9 +31,6 @@ module Diaspora
       end
 
       def unfriend(bad_friend)
-        Rails.logger.info("#{self.real_name} is unfriending #{bad_friend.inspect}")
-        retraction = Retraction.for(self)
-        push_to_people retraction, [bad_friend]
         remove_friend(bad_friend)
       end
 
@@ -106,9 +72,6 @@ module Diaspora
         save
       end
 
-      def request_from_me?(request)
-        pending_requests.detect{|req| (req.callback_url == person.receive_url) && (req.destination_url == person.receive_url)}
-      end
     end
   end
 end
