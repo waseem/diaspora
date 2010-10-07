@@ -21,7 +21,7 @@ module Diaspora
         push_to_people(writ, [new_friend])
         writ
       end
-      
+
       def accept_friend_request(writ_id, aspect_id)
         writ = Writ.find_by_id(writ_id)
         pending_writs.delete(writ)
@@ -92,8 +92,18 @@ module Diaspora
       def activate_friend(person, aspect)
         aspect.people << person
         friends << person
+        ignore_writ(writs_from(person).first)
         save
         aspect.save
+      end
+
+      def writs_from(person)
+        self.pending_writs.select{|w| w.sender == person }
+      end
+
+      def ignore_writ(writ)
+        self.pending_writs -= [writ]
+        save
       end
 
       def request_from_me?(request)
