@@ -1,5 +1,5 @@
 #   Copyright (c) 2010, Diaspora Inc.  This file is
-#   licensed under the Affero General Public License version 3.  See
+#   licensed under the Affero General Public License version 3 or later.  See
 #   the COPYRIGHT file.
 
 require 'spec_helper'
@@ -106,7 +106,6 @@ describe User do
         @user.raw_visible_posts.include?(@message.id).should be_false
       end
       it "deletes the unfriended user's posts from the aspect's posts" do
-        pending "We need to implement this"
         @aspect2.posts.include?(@message).should be_false
       end
     end

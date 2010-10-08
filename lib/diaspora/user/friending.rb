@@ -1,5 +1,5 @@
 #   Copyright (c) 2010, Diaspora Inc.  This file is
-#   licensed under the Affero General Public License version 3.  See
+#   licensed under the Affero General Public License version 3 or later.  See
 #   the COPYRIGHT file.
 
 module Diaspora
@@ -22,7 +22,6 @@ module Diaspora
 
       def receive_writ(writ)
         Rails.logger.info("receiving writ #{writ.to_json}")
-
         return if friends.include? writ.sender #TODO Put this info in a notification queue
         writ.save
         self.pending_writs << writ
