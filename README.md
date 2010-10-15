@@ -5,7 +5,7 @@ network.
 
 **THIS IS PRE-ALPHA SOFTWARE AND SHOULD BE TREATED ACCORDINGLY.**
 **PLEASE, DO NOT RUN IN PRODUCTION. IT IS FUN TO GET RUNNING, BUT EXPECT THINGS
-TO BE BROKEN**
+TO BE BROKEN.**
 
 Installation instructions are [here](http://github.com/diaspora/diaspora/wiki/Installing-and-Running-Diaspora).
 
@@ -15,10 +15,13 @@ Please report any bugs you see.  Issue tracking is at [bugs.joindiaspora.com](ht
 
 You can find an introduction to the source code [here](http://github.com/diaspora/diaspora/wiki/An-Introduction-to-the-Diaspora-Source).
 Bugs and pending features are on our [issue tracker](http://bugs.joindiaspora.com).  Here are a few good places to start:
+
 - Run "rake spec" to run our [Rspec](http://blog.davidchelimsky.net/2007/05/14/an-introduction-to-rspec-part-i/) 
 unit test suite.  Take a look at the pending specs, make one pass!
+
 - Run "rake cucumber" to run our [Cucumber](http://rubylearning.com/blog/2010/10/05/outside-in-development/)
 integration test suite.  As you can see, we need more integration tests.  Pick a feature and write one!
+
 - Take a look at the [issue tracker](http://bugs.joindiaspora.com) and pick a bug.
 Write a spec for it, so it's easy for another developer to fix it.
 
@@ -45,8 +48,7 @@ We are maintaining a
 [public tracker project](http://www.pivotaltracker.com/projects/61641)
 and a
 [roadmap](https://github.com/diaspora/diaspora/wiki/Roadmap). Also, you can
-file [bug reports](https://github.com/diaspora/diaspora/issues) right here on
-github.
+file [bug reports](http://bugs.joindiaspora.com) on our issue tracker.
 
 Ongoing discussion:
 
@@ -56,8 +58,8 @@ Ongoing discussion:
 - [#diaspora-dev IRC channel](irc://irc.freenode.net/#diaspora-dev)
   ([join via the web client](http://webchat.freenode.net?channels=diaspora-dev))
 
-More general info and updates about the project can be found on:
-[Our blog](http://joindiaspora.com),
+More general info and updates about the project can be found on
+[our blog](http://joindiaspora.com),
 [and on Twitter](http://twitter.com/joindiaspora).
 Also, be sure to join the official [mailing list](http://eepurl.com/Vebk).
 

@@ -22,6 +22,20 @@ describe User do
       user.valid?
       user.username.should == "someuppercase"
     end
+
+    it "confirms the password" do
+      pending "I cannot figure out why this doesn't work. --Raphael"
+      user = User.instantiate!( 
+        :email => "tom@tom.joindiaspora.com",
+        :username => "tom",
+        :password => "evankorth",
+        :password_confirmation => "potatoes",
+        :person => Person.new(
+          :profile => Profile.new( :first_name => "Alexander", :last_name => "Hamiltom" ))
+                  )
+      user.created_at.should be_nil
+      user.valid?.should be_false
+    end
   end
 
   describe '#diaspora_handle' do
@@ -72,6 +86,16 @@ describe User do
       user.should_receive(:remove_person)
       user.destroy
     end
+
+    
+    it 'should remove all aspects' do
+      pending "this should use :dependant => :destroy on the many assoc...but that screws this test suite..."
+      aspects = user.aspects
+      user.destroy
+      proc{ aspects.reload }.should raise_error /does not exist/
+
+    end
+
    
     describe '#remove_person' do
       it 'should remove the person object' do
