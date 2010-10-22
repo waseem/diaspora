@@ -47,7 +47,7 @@ $(function() {
         var dropzone = $(this)[0];
 
         if ($(this)[0].id == ui.draggable[0].getAttribute('from_aspect_id')){
-          ui.draggable.css('background','none');
+          ui.draggable.css('background-color','#333');
         } else {
           ui.draggable.css('background-color','orange');
           $.ajax({
@@ -57,7 +57,7 @@ $(function() {
                    "to" : { "to" : dropzone.id }},
             success: function(data){
               ui.draggable.attr('from_aspect_id', dropzone.id);
-              ui.draggable.css('background','none');
+              ui.draggable.css('background-color','#333');
             }});
 
         }
@@ -89,7 +89,36 @@ $(function() {
 
       }
 
-      $(ui.draggable[0]).fadeOut('slow'); // ui.draggable.fadeOut('slow')
+      $(ui.draggable[0]).fadeOut('slow'); 
+      $(ui.draggable[0]).remove();
+    }
+  });
+
+  $(".aspect_remove ul").droppable({
+    hoverClass: 'active',
+    drop: function(event, ui) {
+      if ($( "." + ui.draggable[0].id).length == 1) {
+        alert("You can not remove the person from the last aspect");
+      } else {
+        if (!$(ui.draggable[0]).hasClass('requested_person')){
+          var aspect = ui.draggable[0].getAttribute('from_aspect_id')
+          var person_id =  ui.draggable[0].id
+          $.ajax({
+            type: "POST",
+            url: "/aspects/remove_from_aspect",
+            data:{
+                  'friend_id' : person_id,
+                  'aspect_id' : aspect
+                  }
+          });
+        }
+      $(ui.draggable[0]).fadeOut('slow'); 
+      $(ui.draggable[0]).remove();
+
+
+      }
+
+
     }
   });
 

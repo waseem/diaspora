@@ -6,7 +6,13 @@
   = javascript_include_tag 'jquery-ui-1.8.4.custom.min.js'
   = javascript_include_tag 'aspect-edit.js'
 
-- content_for :left_pane do
+#section_header
+  %h2
+    Manage aspects
+  .right
+    = link_to(t('.add_a_new_aspect'), "#add_aspect_pane", :class => "new_aspect add_aspect_button button", :title => t('.add_a_new_aspect'))
+
+.span-4.append-1.last
   %h3=t('.requests')
 
   .requests
@@ -19,51 +25,47 @@
             = person_image_tag(request.person)
             .name
               = request.person.real_name
-  %h3=t('.ignore_remove')
 
+  %h3 Remove from Aspect
+  .aspect_remove
+    %ul.dropzone
+      %li.grey Drag to remove person from aspect
+
+  %h3=t('.ignore_remove')
   .remove
     %ul.dropzone
       %li.grey Drag to ignore/remove
 
-  %h3= link_to "Invite a friend!", "#invite_user_pane", :id => "invite_user_button", :class => "invite_user_button", :title => "Invite a friend"
-  %h3= "You have #{@invites} invites."
+  = render 'shared/invitations', :invites => @invites
 
-  .yo{ :style => "display:none;"}
-    #invite_user_pane
-      = render "invitations/new"
+.span-19.last
+  %ul#aspect_list
+    - for aspect in @aspects
+      %li.aspect
 
-- content_for :publish do
-  = link_to(t('.add_a_new_aspect'), "#add_aspect_pane", :id => "add_aspect_button", :class => "new_aspect button", :title => t('.add_a_new_aspect'))
+        .aspect_name
+          %span.edit_name_field
+            %h3{:contenteditable => true}= aspect.name
+            %span.tip click to edit
 
+          %ul.tools
+            %li= link_to t('.add_a_new_friend'), "#add_request_pane_#{aspect.id}", :class => 'add_request_button'
+            %li!= remove_link(aspect)
 
-%ul#aspect_list
-  - for aspect in @aspects
-    %li.aspect
+        %ul.dropzone{:id => aspect.id}
 
-      .aspect_name
-        %span.edit_name_field
-          %h3{:contenteditable => true}= aspect.name
-          %span.tip click to edit
+          -if aspect.people.size < 1
+            %li.grey Drag to add people
 
-        %ul.tools
-          %li= link_to t('.add_a_new_friend'), "#add_request_pane_#{aspect.id}", :class => 'add_request_button'
-          %li= link_to t('.show'), aspect_path(aspect)
-          %li!= remove_link(aspect)
+          -else
+            -for person in aspect.people
 
-      %ul.dropzone{:id => aspect.id}
+              %li.person{:id => person.id, :class => person.id, :from_aspect_id => aspect.id}
+                = person_image_tag(person)
+                .name
+                  = link_to person.real_name, person
 
-        -if aspect.people.size < 1
-          %li.grey Drag to add people
+          .fancybox_content
+            %div{:id => "add_request_pane_#{aspect.id}"}
+              = render "requests/new_request", :aspect => aspect
 
-        -else
-          -for person in aspect.people
-
-            %li.person{:id => person.id, :from_aspect_id => aspect.id}
-              = person_image_tag(person)
-              .name
-                = link_to person.real_name, person
-        .yo{:style => 'display:none'}
-          %div{:id => "add_request_pane_#{aspect.id}"}
-            = render "requests/new_request", :aspect => aspect
-
-#content_bottom
