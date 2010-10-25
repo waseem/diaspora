@@ -59,14 +59,16 @@ h3
   
 #flash_notice
   :background
-    :color rgba(127,255,36,0.6)
+    :color rgb(126,240,77)
+    :color rgba(126,240,77,0.98)
   :text
     :shadow 0 1px #6C6
 
 #flash_error,
 #flash_alert
   :background
-    :color rgba(208,49,43,0.85)
+    :color rgb(208,49,43)
+    :color rgba(208,49,43,0.98)
   :border
     :bottom solid 1px #C66
   :text
@@ -202,6 +204,71 @@ header
   .avatar
     :border-radius 5px
 
+
+.from
+  :font
+    :family 'Helvetica neue', Arial, Helvetica, sans-serif
+  :text
+    :shadow 0 1px #fff
+
+  .aspect
+    :cursor default
+    :display inline
+    :color #bbb
+    :font
+      :size 85%
+    a
+      :font
+        :weight normal
+      :color #bbb
+
+      &:hover
+        :text
+          :decoration underline
+      &:active
+        :color #999
+    ul
+      :display inline
+      :margin 0
+      :padding 0
+      :list
+        :style none
+      li
+        :display inline
+        &:after
+          :content ","
+        &:last-child:after
+          :content ""
+
+  a
+    :font
+      :weight bold
+
+#author_info
+  :position relative
+  :padding
+    :left 65px
+  :height 70px
+
+  img
+    :position absolute
+    :top 8px
+    :left 0
+
+  h2
+    :margin
+      :bottom -2px
+  a
+    :font
+      :weight normal
+
+  .from
+    :font
+      :size 14px
+
+  .avatar
+    :border-radius 5px
+
 li.message
   :position relative
   :line-height 19px
@@ -220,44 +287,6 @@ li.message
     :padding
       :left 65px
 
-    .from
-      :font
-        :family 'Helvetica neue', Arial, Helvetica, sans-serif
-      :text
-        :shadow 0 1px #fff
-
-      .aspect
-        :cursor default
-        :display inline
-        :color #bbb
-        :font
-          :size 12px
-        a
-          :font
-            :weight normal
-          :color #bbb
-
-          &:hover
-            :text
-              :decoration underline
-          &:active
-            :color #999
-        ul
-          :display inline
-          :margin 0
-          :padding 0
-          :list
-            :style none
-          li
-            :display inline
-            &:after
-              :content ","
-            &:last-child:after
-              :content ""
-
-      a
-        :font
-          :weight bold
 
     :color #444
     :font
@@ -406,11 +435,10 @@ form
         :right 1em
 
 #stream.show
-  div.comments
+  ul.comments
     :display block
-    ul.comment_set
-      :margin
-        :top 0
+    :margin
+      :top 0
   > li
     :border none
     :padding 0
@@ -420,7 +448,7 @@ form
       :border none
     
 
-#stream div.comments
+#stream ul.comments
   :display none
 
   .avatar
@@ -435,7 +463,7 @@ input.comment_submit
     :right -10px
 
 
-ul.comment_set
+ul.comments
   :margin 0
     :top 1em
   :padding 0
@@ -612,58 +640,60 @@ label
   :color #999
   :position relative
   :min-height 65px
-  :max-height 90px
   :width 100%
   :margin
     :bottom 10px
-    :top 0px
+    :top -14px
 
   :border
     :bottom 2px #777 solid
 
   .avatar
-    :float left
+    :position absolute
     :margin
       :right 15px
     :border-radius 5px
     :-webkit-border-radius 5px
     :-moz-border-radius 5px
 
-  p
-    :position absolute
-    :left 0
+  form
+    :position relative
+    :margin
+      :left 65px
+      :bottom 10px
     :top 0
 
-  form
-    :display inline
-    :position relative
-
   textarea
-    :width 515px
     :height 42px
+    :display block
+
+  input[type='text'],
+  textarea
+    :width 514px
     :margin 0
 
   .options_and_submit
+    :min-height 21px
     :display none
+    :position relative
     :padding
-      :top 63px
-      :bottom 5px
+      :top 8px
+    :margin
+      :bottom -2px
     input[type='submit']
-      :float right
-      :margin
-        :top -4px
+      :position absolute
+      :right -13px
+      :top 5px
       :width 75px
 
     .public_toggle
-      :position absolute
-      :bottom 8px
       :width 300px
+      :margin
+        :left -3px
       :font
         :size smaller
         :style italic
       :display inline
-      :margin
-        :left 62px
 
 #image_picker
   .small_photo
@@ -764,7 +794,7 @@ h1.big_text
     :top 1px solid #999
     :bottom 2px solid #eee
 
-.show_post_comments ul.comment_set
+.show_post_comments ul.comments
   :width 100%
 
 .sub_header
@@ -794,10 +824,6 @@ h1.big_text
 
 #aspect_nav
   :color #000
-  :margin
-    :top 0
-    :bottom 1px
-
   :font
     :family 'Arial', 'Helvetica', sans-serif
 
@@ -826,7 +852,7 @@ h1.big_text
         :line
           :height 22px
 
-        :padding 3px 10px
+        :padding 4px 10px
         :color #CCC
 
         &:hover
@@ -873,13 +899,7 @@ h1.big_text
       :padding 2px
 
 
-.aspect,
-.requests,
-.remove,
-.aspect_remove
-  :list
-    :style none
-
+.aspect
   h3
     :display inline-block
 
@@ -914,63 +934,115 @@ h1.big_text
         &:last-child
           :margin
             :right 0
-
-  .grey
-    :color #999
-    :cursor default
-    :text-shadow 0 1px #fff
+.aspect,
+.requests,
+.aspect_remove
+  :list
+    :style none
+  :color #999
+  :cursor default
+  :text-shadow 0 1px #fff
 
   ul.dropzone
+    :position relative
     :min-height 20px
     :margin 0
       :bottom 25px
-    :background
-      :color #efefef
-    :border 1px solid #ccc
+
+    :-webkit-border-radius 10px
+    :-moz-border-radius 10px
+    :border-radius 10px
+
     :list
       :style none
     :padding 15px
+    :border 2px dashed #ccc
 
     &.active
       :background
-        :color #fafafa
+        :color rgba(255,252,127,0.2)
 
-  .person,
-  .requested_person
+    .draggable_info
+      :position absolute
+      :display none
+      :right 15px 
+      :bottom 10px 
+      :font
+        :style italic
+        :size 14px
+      :color #aaa
+
+  .person
     :display inline-block
-    :padding 5px
     :cursor move
-    :margin 5px
     :z-index 10
+    :position relative
+    :padding 0
+    :margin 5px
 
-    :width 110px
-
-    :background
-      :color #333
-
-    :border-radius 5px
-    :color #ccc
-  
-    a
-      :color #ccc
+    :color #eee
 
     img
-      :height 40px
-      :width 40px
-      :display inline
+      :height 70px
+      :width 70px
+      :border-radius 5px
+      :-webkit-box-shadow 0 1px 2px #999
 
-    .name
-      :display inline
-      :top 0
-      :margin
-        :left 5px
+    &:hover
+      .delete
+        :display inline
 
     &:active
       :z-index 20
-      :color #666
-      :-webkit-box-shadow 0 1px 3px #000
-      :-moz-box-shadow 0 2px 4px #000
-      :opacity 0.9
+      img
+        :-webkit-box-shadow 0 1px 3px #000
+        :-moz-box-shadow 0 2px 4px #000
+
+      .delete
+        :display none
+
+    .delete
+      :display none
+
+      :position absolute
+      :top -8px
+      :left -8px
+
+      .circle
+        :z-index 1
+        :position absolute
+        :background
+          :color #333
+
+        :width 20px
+        :max-width 20px
+        :height 20px
+        :max-height 20px
+
+        :border 1px solid #fff
+
+        :-webkit-border-radius 20px
+        :-moz-border-radius 20px
+        :border-radius 20px
+
+        :-webkit-box-shadow 0 1px 3px #000
+
+      .x
+        :z-index 2
+        :position absolute
+        :top 2px
+        :left 7px
+
+      &:hover
+        :cursor default
+        .circle
+          :background
+            :color rgba(208,49,43,1)
+
+
+.requests
+  ul.dropzone
+    :border 2px solid #ccc
 
 ul#settings_nav
   :display inline
@@ -1043,7 +1115,7 @@ ul#settings_nav
 
 .empty_message
   :margin
-    :bottom 12px
+    :bottom 24px
   :text
     :align center
 
@@ -1090,6 +1162,10 @@ header
 
   h2
     :display inline
+  
+  .right
+    :margin
+      :top 10px
 
 .modal_title_bar
   :width 100%
@@ -1136,3 +1212,27 @@ header
     .controls
       :display inline
 
+ul#breadcrumb
+  :list
+    :style none
+  :margin 0
+  :padding 0
+  :font
+    :size 14px
+    :weight bold
+  :line
+    :height 3em
+
+  a
+    :font
+      :weight bold
+
+  > li
+    :display inline
+
+    &:after
+      :content ' ››'
+
+    &:last-child
+      &:after
+        :content ''
