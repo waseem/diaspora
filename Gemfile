@@ -60,6 +60,7 @@ group :test do
   gem 'mocha'
   gem 'database_cleaner', '0.5.2'
   gem 'webmock'
+  gem 'jasmine'
 end
 
 group :deployment do
