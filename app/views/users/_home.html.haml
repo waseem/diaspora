@@ -1,0 +1,28 @@
+-#   Copyright (c) 2010, Diaspora Inc.  This file is
+-#   licensed under the Affero General Public License version 3 or later.  See
+-#   the COPYRIGHT file.
+
+
+.span-24.last
+  %br
+  .span-12.last
+
+
+    = render 'shared/author_info', :person => current_user.person
+
+    %br
+    %br
+
+
+  .span-12.last
+    %h3
+      = "Your friends"
+    #left_pane
+      .friend_pictures
+        - for friend in @friends
+          = person_image_link(friend)
+
+
+    %br
+    %br
+    %br

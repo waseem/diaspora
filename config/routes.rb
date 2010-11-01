@@ -49,5 +49,5 @@ Diaspora::Application.routes.draw do
   match 'log',                  :to => "dev_utilities#log"
 
   #root
-  root :to => 'users#home'
+  root :to => 'aspects#index'
 end

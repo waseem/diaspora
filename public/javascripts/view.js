@@ -144,3 +144,16 @@ $(".getting_started_box").live("click",function(evt){
         0
     },function(evt){ $(this).css('left', '1000px')});
 });
+
+$("#diaspora_text").live("click", function(){
+
+  var $text = $(this);
+
+  if( $(this).hasClass("active")) {
+    $("#home").slideUp(400);
+    $text.removeClass("active");
+  } else {
+    $("#home").slideDown(400);
+    $text.addClass("active");
+  }
+});

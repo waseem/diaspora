@@ -3,36 +3,32 @@
 -#   the COPYRIGHT file.
 
 
+.span-24.last
+  .span-9.last
+    = render 'shared/author_info', :person => current_user.person
 
-.span-9.last
-  = render 'shared/author_info', :person => current_user.person
+    = link_to "edit profile", edit_person_path(current_user.person)
+    %br
+    = link_to "manage aspects", {:controller => "aspects", :action => "manage"}
 
-  = link_to "edit profile", edit_person_path(current_user.person)
-  = link_to "manage aspects", {:controller => "aspects", :action => "manage"}
+    %br
+    %br
 
+.span-24.last
+  .span-12.last
+    %h3
+      = "Your #{@aspects.count} aspects"
 
-
-.span-15.last
-  %h2
-    = @aspects.count
-    aspects
-
-  %ul.aspects
     - for aspect in @aspects
-      %li
-        = link_to aspect, aspect
-        .friend_pictures.horizontal
-          - for friend in aspect.person_objects
-            = person_image_link(friend)
-        
-  %h2
-    = @friends.count
-    friends
+      = link_to aspect, aspect
+      %br
 
-  .friend_pictures
-    %ul
-      - for friend in @friends
-        %li= link_to person_image_link(friend), friend
-
+  .span-12.last
+    %h3
+      = "Your #{@friends.count} friends"
+    #left_pane
+      .friend_pictures
+        - for friend in @friends
+          = person_image_link(friend)
 
 

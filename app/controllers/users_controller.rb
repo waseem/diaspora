@@ -57,6 +57,7 @@ class UsersController < ApplicationController
   end
 
   def home
+    @aspect = :home
     
   end
 
