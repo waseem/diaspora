@@ -47,6 +47,9 @@
           = link_to "DIASPORA", (current_user ? root_path : new_user_session_path)
           %span.sub_text
             PREVIEW
+        
+        .nav{:style=>"margin-left:20px;display:inline;"}
+          = link_to "Your Aspects", aspects_path
 
         - if current_user
           #global_search
@@ -62,7 +65,7 @@
             %li= link_to t('.account_settings'), edit_user_path(current_user)
             %li= link_to t('.logout.'), destroy_user_session_path
 
-          = render "shared/aspect_nav"
+          /= render "shared/aspect_nav"
 
     .container
       .span-24.last

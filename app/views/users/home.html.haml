@@ -1,0 +1,38 @@
+-#   Copyright (c) 2010, Diaspora Inc.  This file is
+-#   licensed under the Affero General Public License version 3 or later.  See
+-#   the COPYRIGHT file.
+
+
+
+.span-9.last
+  = render 'shared/author_info', :person => current_user.person
+
+  = link_to "edit profile", edit_person_path(current_user.person)
+  = link_to "manage aspects", {:controller => "aspects", :action => "manage"}
+
+
+
+.span-15.last
+  %h2
+    = @aspects.count
+    aspects
+
+  %ul.aspects
+    - for aspect in @aspects
+      %li
+        = link_to aspect, aspect
+        .friend_pictures.horizontal
+          - for friend in aspect.person_objects
+            = person_image_link(friend)
+        
+  %h2
+    = @friends.count
+    friends
+
+  .friend_pictures
+    %ul
+      - for friend in @friends
+        %li= link_to person_image_link(friend), friend
+
+
+

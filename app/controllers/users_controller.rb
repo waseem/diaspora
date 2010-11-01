@@ -56,6 +56,10 @@ class UsersController < ApplicationController
     redirect_to root_path
   end
 
+  def home
+    
+  end
+
   def public
     user = User.find_by_username(params[:username])
 

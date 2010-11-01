@@ -66,6 +66,8 @@ en:
           invitations_left: '(%{count} left)'
       reshare:
           reshare: 'Reshare'
+      author_info:
+          view_profile: "view profile"
   albums:
       album:
           you: "you"
